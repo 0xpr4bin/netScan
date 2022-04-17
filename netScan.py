@@ -67,7 +67,7 @@ def ip_scan(ip):
 	broad_ether_arp_frame=broad_ether_frame/arp_req_frame
 
 	#received packets.
-	answr_list=srp(broad_ether_arp_frame,timeout=1,verbose=False)[0]
+	answr_list=srp(broad_ether_arp_frame,timeout=1,verbose=False)[1]
 	result=list()
 	for i in range(0,len(answr_list)):
 		dic={"ip":answr_list[i][1].psrc,"mac":answr_list[i][1].hwsrc}
@@ -87,7 +87,7 @@ def port_scan1(port,ip):
 	sr(IP(dst=ip)/TCP(dport=port,flags='R'),timeout=0.6,verbose=0)
 		
 
-
+#socket connection between two ports 
 try:
 	target=socket.gethostbyname(str(options.ip))
 except socket.gaierror:
@@ -121,20 +121,17 @@ def sniff_packet():
 	wrpcap("sniff.pcap",capture)
 	sys.exit()
 
-def display(result):
-	print(f'...................\nIP address\tMac address\n.........................')
-	for i in result:
-		print("{}\t{}".format(i["ip"],i["mac"]))
-
 if options.capture:
 	sniff_packet()
 
 
+def display(result):
+	print(f'\n\n...................\nIP address\tMac address\n.........................')
+	for i in result:
+		print("{}\t{}".format(i["ip"],i["mac"]))
 
 #output
 if __name__=='__main__':
-	output=ip_scan(str(options.ip))
-
 	if options.port:
 		port_scan1(int(options.port),str(options.ip))
 	else:
@@ -147,6 +144,7 @@ if __name__=='__main__':
 			q.put(i)
 		q.join()		
 
+	output=ip_scan(options.ip)
 	if options.quiet:
 		print(f'{output}\n')
 	elif options.verbose:
