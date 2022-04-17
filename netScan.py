@@ -52,7 +52,7 @@ options=arg_parser()
 print(f'[+] Scanning networks........{options.ip}..........')
 print("--------------------------------------------------")
 print("Scanning started at:" + str(datetime.now()))
-print("-" * 50)		
+print("-" * 50,"\n\n\n")		
 
 #Scanning IP and mac addresses.
 def ip_scan(ip):
@@ -155,7 +155,7 @@ if __name__=='__main__':
 		print(f'The source ip and mac is > ...............\n{output}')	
 
 
-print("Scanning finished at:" + str(datetime.now()))
+print("\n\n\nScanning finished at:" + str(datetime.now()))
 print("-" * 50)		
 
 
