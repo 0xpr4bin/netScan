@@ -107,7 +107,7 @@ def  port_scan2(port):
 		pass
 
 
-
+#using multi threading for fast scan
 def Threader():
 	while True:
 		w=q.get()
