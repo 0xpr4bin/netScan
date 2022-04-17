@@ -16,6 +16,7 @@ q=Queue()
 
 import argparse
 import pyfiglet
+from collections import Counter
 
 #Banner to show fancy.
 ascii_banner=pyfiglet.figlet_format("Network\t scanner\n")
@@ -52,7 +53,7 @@ options=arg_parser()
 print(f'[+] Scanning networks........{options.ip}..........')
 print("--------------------------------------------------")
 print("Scanning started at:" + str(datetime.now()))
-print("-" * 50,"\n\n\n")		
+print("-" * 50,"\n\n")		
 
 #Scanning IP and mac addresses.
 def ip_scan(ip):
@@ -78,7 +79,7 @@ def ip_scan(ip):
 
 #scanning for open ports 
 def port_scan1(port,ip):
-	print(f'Scanning port________________________{port}')
+	print(f'\n\nScanning port________________________{port}')
 	response=sr1(IP(dst=ip)/TCP(dport=port,flags='S'),timeout=0.6,verbose=0)
 	if response is not None and TCP in response and response[TCP].flags == 0x12:
 		print(f'Port {port} is open!')
@@ -116,22 +117,38 @@ def Threader():
 
 #sniffing packet from networks
 def sniff_packet():
-	capture=sniff(count=10,filter="tcp",store=False)
-	capture.summary()
-	wrpcap("sniff.pcap",capture)
-	sys.exit()
+	packet_counts =Counter()
+	def custom_action(packet):
+		# Create tuple of Src/Dst in sorted order
+		key = tuple(sorted([packet[0][1].src, packet[0][1].dst]))
+		packet_counts.update([key])
+		return f"Packet #{sum(packet_counts.values())}: {packet[0][1].src} ==> {packet[0][1].dst}"
 
+		
+	sniff(filter="ip", prn=custom_action, count=10)
+	## Print out packet count per A <--> Z address pair
+	print(f'\n\npacket captured',"_"*15)
+	print("\n".join(f"{f'{key[0]} <--> {key[1]}'}: {count}" for key, count in packet_counts.items()))
+	
 if options.capture:
 	sniff_packet()
 
 
 def display(result):
-	print(f'\n\n...................\nIP address\tMac address\n.........................')
+	print(f'IP address\tMac address\n.........................')
 	for i in result:
 		print("{}\t{}".format(i["ip"],i["mac"]))
 
 #output
 if __name__=='__main__':
+	output=ip_scan(options.ip)
+	if options.quiet:
+		print(f'{output}\n')
+	elif options.verbose:
+		display(output)
+	else:
+		print(f'The source ip and mac is > ...............\n{output}')	
+
 	if options.port:
 		port_scan1(int(options.port),str(options.ip))
 	else:
@@ -143,14 +160,6 @@ if __name__=='__main__':
 		for i in range(0,1001):
 			q.put(i)
 		q.join()		
-
-	output=ip_scan(options.ip)
-	if options.quiet:
-		print(f'{output}\n')
-	elif options.verbose:
-		display(output)
-	else:
-		print(f'The source ip and mac is > ...............\n{output}')	
 
 
 print("\n\n\nScanning finished at:" + str(datetime.now()))
