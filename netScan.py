@@ -6,9 +6,16 @@ logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 #Modules from python library.
 from scapy.all import *
+from threading import Thread
+from queue import Queue
+import socket
+import sys
+
+lock=threading.Lock()
+q=Queue()
+
 import argparse
 import pyfiglet
-
 
 #Banner to show fancy.
 ascii_banner=pyfiglet.figlet_format("Network\t scanner\n")
@@ -42,10 +49,6 @@ def arg_parser():
 #calling funtion
 options=arg_parser()
 
-
-
-
-
 print(f'[+] Scanning networks........{options.ip}..........')
 print("--------------------------------------------------")
 print("Scanning started at:" + str(datetime.now()))
@@ -66,58 +69,65 @@ def ip_scan(ip):
 	#received packets.
 	answr_list=srp(broad_ether_arp_frame,timeout=1,verbose=False)[0]
 	result=list()
-	
-
 	for i in range(0,len(answr_list)):
 		dic={"ip":answr_list[i][1].psrc,"mac":answr_list[i][1].hwsrc}
 		result.append(dic)
-
 	return result
+
 
 
 #scanning for open ports 
 def port_scan1(port,ip):
+	print(f'Scanning port________________________{port}')
 	response=sr1(IP(dst=ip)/TCP(dport=port,flags='S'),timeout=0.6,verbose=0)
-	if response and response.haslayer(TCP) and response.getlayer(TCP).flags==0x12:
+	if response is not None and TCP in response and response[TCP].flags == 0x12:
 		print(f'Port {port} is open!')
-	elif response and response.getlayer(TCP).flags==0x14:
-		print(f'Port {port} is closed')
 	else:
-		print(f'All ports are closed')	
+		print(f' Port {port} is closed')	
 	sr(IP(dst=ip)/TCP(dport=port,flags='R'),timeout=0.6,verbose=0)
 		
 
-def  port_scan2(ip):
-	for i in range(0,1000):
-		response=sr1(IP(dst=ip)/TCP(dport=i,flags='S'),timeout=0.6,verbose=0)
-		if response and response.haslayer(TCP) and response.getlayer(TCP).flags==0x12:
-			print(f'Port {i} is open!')
-		elif response and response.getlayer(TCP).flags==0x14:
-			print(f'Port {i} is closed')
-		else:
-			print(f'All ports are closed')	
-		sr(IP(dst=ip)/TCP(dport=port,flags='R'),timeout=0.6,verbose=0)
+
+try:
+	target=socket.gethostbyname(str(options.ip))
+except socket.gaierror:
+	print(f'Error getting Ip')
+	sys.exit()	
 
 
+def  port_scan2(port):
+	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+	try:
+		s.settimeout(2)
+		conn=s.connect_ex((target,port))
+		if not conn:
+			print(f'Port {port} is open')	
+		s.close()
+	except:
+		pass
+
+
+
+def Threader():
+	while True:
+		w=q.get()
+		port_scan2(w)
+		q.task_done()
 
 #sniffing packet from networks
 def sniff_packet():
-	capture=sniff(count=4,filter="tcp",store=False)
+	capture=sniff(count=10,filter="tcp",store=False)
 	capture.summary()
 	wrpcap("sniff.pcap",capture)
-
-
+	sys.exit()
 
 def display(result):
 	print(f'...................\nIP address\tMac address\n.........................')
-	for i in reult:
+	for i in result:
 		print("{}\t{}".format(i["ip"],i["mac"]))
-
-
 
 if options.capture:
 	sniff_packet()
-
 
 
 
@@ -128,8 +138,14 @@ if __name__=='__main__':
 	if options.port:
 		port_scan1(int(options.port),str(options.ip))
 	else:
-		port_scan2(str(options.ip))	
-
+		#Using multi_threading to fast scan 1000 ports	
+		for x in range(500):
+			t=Thread(target=Threader)
+			t.daemon=True
+			t.start()	
+		for i in range(0,1001):
+			q.put(i)
+		q.join()		
 
 	if options.quiet:
 		print(f'{output}\n')
@@ -139,7 +155,8 @@ if __name__=='__main__':
 		print(f'The source ip and mac is > ...............\n{output}')	
 
 
-
+print("Scanning finished at:" + str(datetime.now()))
+print("-" * 50)		
 
 
 
