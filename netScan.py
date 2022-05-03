@@ -19,10 +19,10 @@ import pyfiglet
 from collections import Counter
 
 #Banner to show fancy.
-ascii_banner=pyfiglet.figlet_format("Network\t scanner\n")
+ascii_banner=pyfiglet.figlet_format("Network scanner\n")
 print(ascii_banner)
 
-print(f'Author->Pr4bin Sigd3l\n......................\n')
+print(f'Author -> Pr4bin Sigd3l\n.........................\n')
 
 
 #Command line arguments.
@@ -32,7 +32,7 @@ def arg_parser():
 	#optional arguments.
 	parser.add_argument('-i', '--ip', dest='ip', metavar='', required=True, help='host or ip of target networks')
 	parser.add_argument('-p', '--port', dest='port', metavar='', help='specific port')
-	parser.add_argument('-c', '--capture', dest='capture', action='store_true', help='sniff/capture packet')
+	parser.add_argument('-cp', '--capture', dest='capture', action='store_true', help='sniff/capture packet')
 
 	#Both aswell as one can be executed -q or -v.
 	group=parser.add_mutually_exclusive_group()
@@ -82,9 +82,9 @@ def port_scan1(port,ip):
 	print(f'\n\nScanning port________________________{port}')
 	response=sr1(IP(dst=ip)/TCP(dport=port,flags='S'),timeout=0.6,verbose=0)
 	if response is not None and TCP in response and response[TCP].flags == 0x12:
-		print(f'Port {port} is open!')
+		print(f'Port {port} is open!\n\n')
 	else:
-		print(f' Port {port} is closed')	
+		print(f' Port {port} is closed!!\n')	
 	sr(IP(dst=ip)/TCP(dport=port,flags='R'),timeout=0.6,verbose=0)
 		
 
@@ -102,7 +102,7 @@ def  port_scan2(port):
 		s.settimeout(2)
 		conn=s.connect_ex((target,port))
 		if not conn:
-			print(f'Port {port} is open')	
+			print(f'Port {port} is open!')	
 		s.close()
 	except:
 		pass
@@ -147,17 +147,17 @@ if __name__=='__main__':
 	elif options.verbose:
 		display(output)
 	else:
-		print(f'The source ip and mac is > ...............\n{output}')	
+		print(f'The source ip and mac is > ...............\n{output}\n\n')	
 
 	if options.port:
 		port_scan1(int(options.port),str(options.ip))
 	else:
 		#Using multi_threading to fast scan 1000 ports	
-		for x in range(500):
+		for x in range(800):
 			t=Thread(target=Threader)
 			t.daemon=True
 			t.start()	
-		for i in range(0,1001):
+		for i in range(0,10001):
 			q.put(i)
 		q.join()		
 
