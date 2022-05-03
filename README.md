@@ -9,3 +9,5 @@
  `pip install scapy`
 
 `pip install pyfiglet`
+
+`chmod +x netScan.py`
