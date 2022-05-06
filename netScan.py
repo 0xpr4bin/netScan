@@ -152,12 +152,12 @@ if __name__=='__main__':
 	if options.port:
 		port_scan1(int(options.port),str(options.ip))
 	else:
-		#Using multi_threading to fast scan 1000 ports	
-		for x in range(800):
+		#Using multi_threading to fast scan 1023 well-known ports	
+		for x in range(500):
 			t=Thread(target=Threader)
 			t.daemon=True
 			t.start()	
-		for i in range(0,10001):
+		for i in range(0,1023):
 			q.put(i)
 		q.join()		
 
