@@ -10,3 +10,5 @@
 
 `pip install pyfiglet`
 
+`chmod +x netScan.py`
+
