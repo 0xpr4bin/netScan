@@ -12,3 +12,4 @@
 
 `chmod +x netScan.py`
 
+`./netScan.py`
