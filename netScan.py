@@ -1,28 +1,29 @@
+#!/usr/bin/env python3
+
+
+#Modules from python library.
 import logging
+from scapy.all import *
+from threading import Thread
+from queue import Queue
+import pyfiglet
+import socket
+import sys
+
+import argparse
+from collections import Counter
+
+lock=threading.Lock()
+q=Queue()
 
 #If any error occurs.
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 
-#Modules from python library.
-from scapy.all import *
-from threading import Thread
-from queue import Queue
-import socket
-import sys
-
-lock=threading.Lock()
-q=Queue()
-
-import argparse
-import pyfiglet
-from collections import Counter
-
-#Banner to show fancy.
-ascii_banner=pyfiglet.figlet_format("Network scanner\n")
+ascii_banner=pyfiglet.figlet_format("netScan\n")
 print(ascii_banner)
 
-print(f'Author -> Pr4bin Sigd3l\n.........................\n')
+print(f'Author ---> Pr4bin Sigd3l\n.........................\n')
 
 
 #Command line arguments.
@@ -30,7 +31,7 @@ def arg_parser():
 	parser=argparse.ArgumentParser(description="Scanning networks\n........................")
 
 	#optional arguments.
-	parser.add_argument('-i', '--ip', dest='ip', metavar='', required=True, help='host or ip of target networks')
+	parser.add_argument('ip', metavar='ip', help='host or ip of target networks')
 	parser.add_argument('-p', '--port', dest='port', metavar='', help='specific port')
 	parser.add_argument('-cp', '--capture', dest='capture', action='store_true', help='sniff/capture packet')
 
@@ -74,8 +75,6 @@ def ip_scan(ip):
 		dic={"ip":answr_list[i][1].psrc,"mac":answr_list[i][1].hwsrc}
 		result.append(dic)
 	return result
-
-
 
 #scanning for open ports 
 def port_scan1(port,ip):
@@ -164,6 +163,4 @@ if __name__=='__main__':
 
 print("\n\n\nScanning finished at:" + str(datetime.now()))
 print("-" * 50)		
-
-
 
