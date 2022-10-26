@@ -12,4 +12,4 @@
 
 `chmod +x netScan.py`
 
-`./netScan.py`
+`sudo ln -s /full-path/netScan.py /usr/bin/netScan`
